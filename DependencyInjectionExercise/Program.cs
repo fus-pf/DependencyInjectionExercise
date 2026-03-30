@@ -1,5 +1,6 @@
 using DependencyInjectionExercise.Data;
 using DependencyInjectionExercise.Services;
+using DependencyInjectionExercise.Services.NotificationSenders;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);

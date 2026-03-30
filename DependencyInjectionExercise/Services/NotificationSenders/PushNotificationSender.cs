@@ -1,6 +1,6 @@
 ﻿using DependencyInjectionExercise.Models;
 
-namespace DependencyInjectionExercise.Services
+namespace DependencyInjectionExercise.Services.NotificationSenders
 {
     public class PushNotificationSender : INotificationSender
     {

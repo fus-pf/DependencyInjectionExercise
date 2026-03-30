@@ -1,21 +1,21 @@
 ﻿using DependencyInjectionExercise.Models;
 
-namespace DependencyInjectionExercise.Services
+namespace DependencyInjectionExercise.Services.NotificationSenders
 {
-    public class EmailNotificationSender : INotificationSender
+    public class WebhookNotificationSender : INotificationSender
     {
         private readonly NotificationHub _notificationHub;
 
-        public EmailNotificationSender(NotificationHub notificationHub)
+        public WebhookNotificationSender(NotificationHub notificationHub)
         {
             _notificationHub = notificationHub;
         }
 
-        public string Channel => "email";
+        public string Channel => "webhook";
 
         public void Send(Order order, string message)
         {
-            Console.WriteLine($"[EMAIL] To: {order.CustomerEmail} | {message}");
+            Console.WriteLine($"[WEBHOOK] To: {order.CustomerEmail} | {message}");
 
             _notificationHub.Add(new NotificationLog
             {
