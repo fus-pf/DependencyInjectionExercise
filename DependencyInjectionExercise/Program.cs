@@ -1,6 +1,12 @@
 using DependencyInjectionExercise.Data;
+using DependencyInjectionExercise.Middlewares;
+using DependencyInjectionExercise.Respositories;
+using DependencyInjectionExercise.Respositories.BookRepositories;
+using DependencyInjectionExercise.Respositories.OrderRepositories;
 using DependencyInjectionExercise.Services;
+using DependencyInjectionExercise.Services.BookServices;
 using DependencyInjectionExercise.Services.NotificationSenders;
+using DependencyInjectionExercise.Services.OrderServices;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,6 +15,14 @@ builder.Services.AddControllers();
 
 builder.Services.AddDbContext<BookStoreContext>(options =>
     options.UseInMemoryDatabase("BookStoreDb"));
+
+builder.Services.AddScoped<ExceptionMiddleware>();
+
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IBookService, BookService>();
+
+builder.Services.AddScoped<IBookRepository, BookRepository>();
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 
 builder.Services.AddSingleton<DiscountService>();
 builder.Services.AddSingleton<OrderTrackingService>();
@@ -32,6 +46,8 @@ using (var scope = app.Services.CreateScope())
 
 app.UseDefaultFiles();
 app.UseStaticFiles();
+
+app.UseMiddleware<ExceptionMiddleware>();
 
 app.MapControllers();
 

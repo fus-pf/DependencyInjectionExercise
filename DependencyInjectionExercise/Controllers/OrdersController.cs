@@ -1,6 +1,8 @@
 using DependencyInjectionExercise.Data;
 using DependencyInjectionExercise.Models;
 using DependencyInjectionExercise.Services;
+using DependencyInjectionExercise.Services.BookServices;
+using DependencyInjectionExercise.Services.OrderServices;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,95 +12,44 @@ namespace DependencyInjectionExercise.Controllers;
 [Route("api/[controller]")]
 public class OrdersController : ControllerBase
 {
-    private readonly BookStoreContext _context;
+    private readonly IOrderService _orderService;
     private readonly DiscountService _discountService;
     private readonly OrderTrackingService _orderTracking;
-    private readonly NotificationResolverService _notificationResolverService;
 
     public OrdersController(
-        BookStoreContext context,
+        IOrderService orderService,
         DiscountService discountService,
-        OrderTrackingService orderTracking,
-        NotificationResolverService notificationResolverService)
+        OrderTrackingService orderTracking)
     {
-        _context = context;
+        _orderService = orderService;
         _discountService = discountService;
         _orderTracking = orderTracking;
-        _notificationResolverService = notificationResolverService;
     }
 
     [HttpPost]
     public async Task<ActionResult<Order>> PlaceOrder(Order order)
     {
-        var book = await _context.Books.FindAsync(order.BookId);
-        if (book == null)
-            return NotFound("Book not found");
+        var result = await _orderService.PlaceOrderAsync(order);
 
-        if (order.Quantity <= 0)
-            return BadRequest("Quantity must be greater than zero");
-
-        if (book.Stock < order.Quantity)
-            return BadRequest($"Not enough stock. Available: {book.Stock}");
-
-        order.TotalPrice = book.Price * order.Quantity;
-
-        var discountPercent = _discountService.CalculateDiscount(
-            book.Category, order.Quantity, order.CustomerName);
-        order.DiscountApplied = discountPercent;
-        order.TotalPrice *= (1 - discountPercent);
-
-        book.Stock -= order.Quantity;
-        order.OrderDate = DateTime.UtcNow;
-        order.Status = "confirmed";
-
-        _orderTracking.SetTrackingNote($"Order placed for {order.Quantity}x '{book.Title}'");
-
-        _context.Orders.Add(order);
-        await _context.SaveChangesAsync();
-
-        var secondTracking = HttpContext.RequestServices.GetRequiredService<OrderTrackingService>();
-        var trackingNote = secondTracking.GetTrackingNote();
-        order.TrackingNote = trackingNote;
-        await _context.SaveChangesAsync();
-
-        SendNotification(order, book,
-            $"Your order for {order.Quantity}x '{book.Title}' has been confirmed. Total: ${order.TotalPrice:F2}");
-
-        return CreatedAtAction(nameof(GetOrder), new { id = order.Id }, order);
+        return CreatedAtAction(nameof(GetOrder), new { id = result.Id }, result);
     }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<Order>> GetOrder(int id)
     {
-        var order = await _context.Orders.FindAsync(id);
-        if (order == null) return NotFound();
-        return order;
+        return await _orderService.GetOrderAsync(id);
     }
 
     [HttpGet]
     public async Task<ActionResult<List<Order>>> GetOrders()
     {
-        return await _context.Orders.OrderByDescending(o => o.OrderDate).ToListAsync();
+        return await _orderService.GetOrdersAsync();
     }
 
     [HttpPatch("{id}/cancel")]
     public async Task<IActionResult> CancelOrder(int id)
     {
-        var order = await _context.Orders.FindAsync(id);
-        if (order == null) return NotFound();
-
-        if (order.Status == "cancelled")
-            return BadRequest("Order is already cancelled");
-
-        var book = await _context.Books.FindAsync(order.BookId);
-        if (book != null)
-            book.Stock += order.Quantity;
-
-        order.Status = "cancelled";
-        await _context.SaveChangesAsync();
-
-        SendNotification(order, book,
-            $"Your order #{order.Id} has been cancelled. Refund: ${order.TotalPrice:F2}");
+        await _orderService.CancelOrderAsync(id);
 
         return NoContent();
     }
@@ -123,10 +74,5 @@ public class OrdersController : ControllerBase
             TrackingNote = _orderTracking.GetTrackingNote(),
             Warning = "If TrackingNote is null, that's a bug!"
         });
-    }
-
-    private void SendNotification(Order order, Book? book, string message)
-    {
-        _notificationResolverService.Send(order, book, message);
-    }
+    }    
 }
