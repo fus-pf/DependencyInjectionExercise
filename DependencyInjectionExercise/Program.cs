@@ -10,7 +10,7 @@ builder.Services.AddDbContext<BookStoreContext>(options =>
     options.UseInMemoryDatabase("BookStoreDb"));
 
 builder.Services.AddSingleton<DiscountService>();
-builder.Services.AddTransient<OrderTrackingService>();
+builder.Services.AddSingleton<OrderTrackingService>();
 builder.Services.AddSingleton<NotificationHub>();
 
 var app = builder.Build();
