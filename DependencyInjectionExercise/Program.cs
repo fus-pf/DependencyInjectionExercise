@@ -13,6 +13,13 @@ builder.Services.AddSingleton<DiscountService>();
 builder.Services.AddSingleton<OrderTrackingService>();
 builder.Services.AddSingleton<NotificationHub>();
 
+builder.Services.AddSingleton<NotificationResolverService>();
+
+builder.Services.AddSingleton<INotificationSender, EmailNotificationSender>();
+builder.Services.AddSingleton<INotificationSender, SmsNotificationSender>();
+builder.Services.AddSingleton<INotificationSender, PushNotificationSender>();
+builder.Services.AddSingleton<INotificationSender, WebhookNotificationSender>();
+
 var app = builder.Build();
 
 // Seed the database

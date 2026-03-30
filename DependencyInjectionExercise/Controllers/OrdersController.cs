@@ -13,18 +13,18 @@ public class OrdersController : ControllerBase
     private readonly BookStoreContext _context;
     private readonly DiscountService _discountService;
     private readonly OrderTrackingService _orderTracking;
-    private readonly NotificationHub _notificationHub;
+    private readonly NotificationResolverService _notificationResolverService;
 
     public OrdersController(
         BookStoreContext context,
         DiscountService discountService,
         OrderTrackingService orderTracking,
-        NotificationHub notificationHub)
+        NotificationResolverService notificationResolverService)
     {
         _context = context;
         _discountService = discountService;
         _orderTracking = orderTracking;
-        _notificationHub = notificationHub;
+        _notificationResolverService = notificationResolverService;
     }
 
     [HttpPost]
@@ -127,31 +127,6 @@ public class OrdersController : ControllerBase
 
     private void SendNotification(Order order, Book? book, string message)
     {
-        if (order.NotificationMethod == "email")
-        {
-            Console.WriteLine($"[EMAIL] To: {order.CustomerEmail} | {message}");
-            _notificationHub.Add(new NotificationLog
-            {
-                Timestamp = DateTime.UtcNow,
-                Channel = "email",
-                Recipient = order.CustomerEmail,
-                Message = message
-            });
-        }
-        else if (order.NotificationMethod == "sms")
-        {
-            Console.WriteLine($"[SMS] To: {order.CustomerPhone} | {message}");
-            _notificationHub.Add(new NotificationLog
-            {
-                Timestamp = DateTime.UtcNow,
-                Channel = "sms",
-                Recipient = order.CustomerPhone,
-                Message = message
-            });
-        }
-        else
-        {
-            Console.WriteLine($"[UNKNOWN CHANNEL: {order.NotificationMethod}] {message}");
-        }
+        _notificationResolverService.Send(order, book, message);
     }
 }
