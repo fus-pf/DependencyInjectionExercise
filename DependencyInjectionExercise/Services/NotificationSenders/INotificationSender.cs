@@ -4,7 +4,6 @@ namespace DependencyInjectionExercise.Services.NotificationSenders
 {
     public interface INotificationSender
     {
-        string Channel { get; }
-        void Send(Order order, string message);
+        void Send(Order order, Book? book, string message);
     }
 }

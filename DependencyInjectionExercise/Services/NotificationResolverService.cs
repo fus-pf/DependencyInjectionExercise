@@ -5,18 +5,19 @@ namespace DependencyInjectionExercise.Services
 {
     public class NotificationResolverService
     {
-        private readonly Dictionary<string, INotificationSender> _senders;
+        private readonly IServiceProvider _serviceProvider;
 
-        public NotificationResolverService(IEnumerable<INotificationSender> senders)
+        public NotificationResolverService(IServiceProvider serviceProvider)
         {
-            _senders = senders.ToDictionary(s => s.Channel, StringComparer.OrdinalIgnoreCase);
+            _serviceProvider = serviceProvider;
         }
 
         public void Send(Order order, Book? book, string message)
         {
-            if (_senders.TryGetValue(order.NotificationMethod, out var sender))
+            var sender = _serviceProvider.GetRequiredKeyedService<INotificationSender>(order.NotificationMethod);
+            if (sender != null)
             {
-                sender.Send(order, message);
+                sender.Send(order, book, message);
             }
             else
             {

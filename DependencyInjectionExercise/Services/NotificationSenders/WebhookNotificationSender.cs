@@ -11,16 +11,14 @@ namespace DependencyInjectionExercise.Services.NotificationSenders
             _notificationHub = notificationHub;
         }
 
-        public string Channel => "webhook";
-
-        public void Send(Order order, string message)
+        public void Send(Order order, Book? book, string message)
         {
             Console.WriteLine($"[WEBHOOK] To: {order.CustomerEmail} | {message}");
 
             _notificationHub.Add(new NotificationLog
             {
                 Timestamp = DateTime.UtcNow,
-                Channel = Channel,
+                Channel = "webhook",
                 Recipient = order.CustomerEmail,
                 Message = message
             });

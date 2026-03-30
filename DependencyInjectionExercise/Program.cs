@@ -30,10 +30,10 @@ builder.Services.AddSingleton<NotificationHub>();
 
 builder.Services.AddSingleton<NotificationResolverService>();
 
-builder.Services.AddSingleton<INotificationSender, EmailNotificationSender>();
-builder.Services.AddSingleton<INotificationSender, SmsNotificationSender>();
-builder.Services.AddSingleton<INotificationSender, PushNotificationSender>();
-builder.Services.AddSingleton<INotificationSender, WebhookNotificationSender>();
+builder.Services.AddKeyedSingleton<INotificationSender, EmailNotificationSender>("email");
+builder.Services.AddKeyedSingleton<INotificationSender, SmsNotificationSender>("sms");
+builder.Services.AddKeyedSingleton<INotificationSender, PushNotificationSender>("push");
+builder.Services.AddKeyedSingleton<INotificationSender, WebhookNotificationSender>("webhook");
 
 var app = builder.Build();
 

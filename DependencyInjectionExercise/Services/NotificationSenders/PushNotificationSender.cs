@@ -11,16 +11,14 @@ namespace DependencyInjectionExercise.Services.NotificationSenders
             _notificationHub = notificationHub;
         }
 
-        public string Channel => "push";
-
-        public void Send(Order order, string message)
+        public void Send(Order order, Book? book, string message)
         {
             Console.WriteLine($"[PUSH] To user: {order.CustomerName} | {message}");
 
             _notificationHub.Add(new NotificationLog
             {
                 Timestamp = DateTime.UtcNow,
-                Channel = Channel,
+                Channel = "push",
                 Recipient = order.CustomerName,
                 Message = message
             });

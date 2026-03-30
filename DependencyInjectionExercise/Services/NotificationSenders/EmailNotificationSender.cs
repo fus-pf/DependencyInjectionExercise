@@ -11,16 +11,14 @@ namespace DependencyInjectionExercise.Services.NotificationSenders
             _notificationHub = notificationHub;
         }
 
-        public string Channel => "email";
-
-        public void Send(Order order, string message)
+        public void Send(Order order, Book? book, string message)
         {
             Console.WriteLine($"[EMAIL] To: {order.CustomerEmail} | {message}");
 
             _notificationHub.Add(new NotificationLog
             {
                 Timestamp = DateTime.UtcNow,
-                Channel = Channel,
+                Channel = "email",
                 Recipient = order.CustomerEmail,
                 Message = message
             });
