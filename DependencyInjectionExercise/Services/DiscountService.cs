@@ -7,20 +7,17 @@ public class DiscountService
 
     public decimal LastAppliedDiscount { get; private set; }
     public string LastCustomerName => _currentCustomerName;
-    public int OrderCountInSession => _orderCountInSession.TryGetValue(_currentCustomerName, out var value) ? value : 0;
+    public int OrderCountInSession => _orderCountInSession.GetValueOrDefault(_currentCustomerName, 0);
 
     public decimal CalculateDiscount(string category, int quantity, string customerName)
     {
         _currentCustomerName = customerName;
 
-        if (_orderCountInSession.ContainsKey(customerName))
+        if (!_orderCountInSession.ContainsKey(customerName))
         {
-            _orderCountInSession[customerName]++;
+            _orderCountInSession[customerName] = 0;
         }
-        else
-        {
-            _orderCountInSession[customerName] = 1;
-        }
+        _orderCountInSession[customerName]++;
 
         decimal discountPercent = 0;
 
