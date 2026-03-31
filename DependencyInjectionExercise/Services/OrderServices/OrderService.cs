@@ -1,5 +1,4 @@
 ﻿using DependencyInjectionExercise.Models;
-using DependencyInjectionExercise.Respositories;
 using DependencyInjectionExercise.Respositories.BookRepositories;
 using DependencyInjectionExercise.Respositories.OrderRepositories;
 using Microsoft.AspNetCore.Mvc;
@@ -14,18 +13,21 @@ namespace DependencyInjectionExercise.Services.OrderServices
         private readonly DiscountService _discountService;
         private readonly OrderTrackingService _orderTracking;
         private readonly NotificationResolverService _notificationResolverService;
+        private readonly IServiceProvider _services;
 
         public OrderService(IOrderRepository orderRepository, 
             IBookRepository bookRepository,
             DiscountService discountService, 
             OrderTrackingService orderTracking,
-            NotificationResolverService notificationResolverService)
+            NotificationResolverService notificationResolverService,
+            IServiceProvider services)
         {
             _orderRepository = orderRepository;
             _bookRepository = bookRepository;
             _discountService = discountService;
             _orderTracking = orderTracking;
             _notificationResolverService = notificationResolverService;
+            _services = services;
         }
 
         private void SendNotification(Order order, Book? book, string message)
@@ -59,9 +61,13 @@ namespace DependencyInjectionExercise.Services.OrderServices
 
             _orderTracking.SetTrackingNote($"Order placed for {order.Quantity}x '{book.Title}'");
 
-            order.TrackingNote = _orderTracking.GetTrackingNote();
-
             await _orderRepository.AddAsync(order);
+            await _orderRepository.SaveChangesAsync();
+
+            var secondTracking = _services.GetRequiredService<OrderTrackingService>();
+            var trackingNote = secondTracking.GetTrackingNote();
+            order.TrackingNote = trackingNote;
+
             await _orderRepository.SaveChangesAsync();
 
             SendNotification(order, book,

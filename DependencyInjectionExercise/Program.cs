@@ -1,6 +1,5 @@
 using DependencyInjectionExercise.Data;
 using DependencyInjectionExercise.Middlewares;
-using DependencyInjectionExercise.Respositories;
 using DependencyInjectionExercise.Respositories.BookRepositories;
 using DependencyInjectionExercise.Respositories.OrderRepositories;
 using DependencyInjectionExercise.Services;
@@ -25,7 +24,7 @@ builder.Services.AddScoped<IBookRepository, BookRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 
 builder.Services.AddSingleton<DiscountService>();
-builder.Services.AddSingleton<OrderTrackingService>();
+builder.Services.AddScoped<OrderTrackingService>();
 builder.Services.AddSingleton<NotificationHub>();
 
 builder.Services.AddSingleton<NotificationResolverService>();
